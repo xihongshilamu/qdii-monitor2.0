@@ -34,7 +34,8 @@ body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC
 .fc .nm{font-size:14px;font-weight:700;line-height:1.35;flex:1}.fc .cd{font-size:11px;color:var(--text2);margin-top:1px}
 .bdg{padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0}
 .bdg.bo{background:var(--green);color:#fff}.bdg.bl{background:var(--orange);color:#fff}.bdg.bc{background:var(--red);color:#fff}
-.fc .info{display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--text2)}.fc .info .it{display:flex;flex-direction:column;gap:1px}.fc .info .v{font-size:13px;font-weight:700;color:var(--text)}
+.fc .info{display:flex;flex-wrap:wrap;gap:10px 14px;margin-top:8px;font-size:11px;color:var(--text2)}.fc .info .it{display:flex;flex-direction:column;gap:1px}.fc .info .v{font-size:13px;font-weight:700;color:var(--text)}
+.fc .info .it.lim .v{color:var(--orange);font-weight:800}
 .fc .acts{position:absolute;right:8px;bottom:8px}
 .xb{background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:4px 6px;opacity:.4}.xb:hover,.xb:active{opacity:1;color:var(--red)}
 .emp{text-align:center;padding:36px 20px;color:var(--text2);font-size:13px;line-height:1.6}.emp .ic{font-size:40px;margin-bottom:8px}
@@ -124,6 +125,13 @@ function isUS(f) {
 }
 function shown(f) { return isUS(f) || favs.indexOf(f.code) >= 0; }
 
+function limitLabel(f) {
+  if (f.status === 'open') return '不限';
+  if (f.limitAmount) return f.limitAmount;
+  if (f.status === 'limit') return '限大额';
+  return '--';
+}
+
 function render() {
   var vis = allFunds.filter(shown);
   var nO = vis.filter(function(f){return f.status==='open'}).length;
@@ -160,10 +168,14 @@ function render() {
     var bc = f.status==='open'?'bo':f.status==='limit'?'bl':'bc';
     var dc = f.dayChange && f.dayChange !== '--' ? (parseFloat(f.dayChange)>=0?'+':'') + f.dayChange + '%' : '--';
     var dcol = f.dayChange && f.dayChange !== '--' ? (parseFloat(f.dayChange)>=0?'var(--red)':'var(--green)') : 'var(--text2)';
+    var lbl = limitLabel(f);
+    var limCls = f.limitAmount ? ' lim' : '';
+
     h += '<div class="fc '+sc+'"><div class="top"><div><div class="nm">'+esc(f.name)+'</div>' +
       '<div class="cd">'+f.code+'</div></div>' +
       '<span class="bdg '+bc+'">'+esc(f.statusText)+'</span></div>' +
       '<div class="info">' +
+      '<div class="it'+limCls+'"><span>单日限额</span><span class="v">'+esc(lbl)+'</span></div>' +
       '<div class="it"><span>最新净值</span><span class="v">'+esc(f.nav)+'</span></div>' +
       '<div class="it"><span>日涨跌</span><span class="v" style="color:'+dcol+'">'+dc+'</span></div>' +
       '<div class="it"><span>净值日期</span><span class="v">'+esc(f.navDate)+'</span></div></div>' +
@@ -185,8 +197,9 @@ function doSearch() {
   else {
     box.innerHTML = res.slice(0,30).map(function(f) {
       var added = favs.indexOf(f.code) >= 0;
+      var extra = f.limitAmount ? ' · 限购'+f.limitAmount : '';
       return '<div class="si"><div class="inf"><div class="nm">'+esc(f.name)+'</div>' +
-        '<div class="cd">'+f.code+' · '+esc(f.statusText)+'</div></div>' +
+        '<div class="cd">'+f.code+' · '+esc(f.statusText)+extra+'</div></div>' +
         '<button class="ba'+(added?' done':'')+'" onclick="addFav(\''+f.code+'\',this)">'+(added?'已添加':'+ 自选')+'</button></div>';
     }).join('');
   }
