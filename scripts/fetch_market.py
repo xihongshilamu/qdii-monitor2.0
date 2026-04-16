@@ -6,11 +6,13 @@ import json, sys, urllib.request
 from datetime import datetime, timezone, timedelta
 
 SYMBOLS = {
-    'SPX':  {'yahoo': '%5EGSPC', 'name': 'S&P 500'},
-    'NDX':  {'yahoo': '%5EIXIC', 'name': 'Nasdaq'},
-    'DJI':  {'yahoo': '%5EDJI',  'name': 'Dow Jones'},
-    'VIX':  {'yahoo': '%5EVIX',  'name': 'VIX'},
-    'GOLD': {'yahoo': 'GC%3DF',  'name': 'Gold'},
+    'SPX':    {'yahoo': '%5EGSPC', 'name': 'S&P 500'},
+    'NDX':    {'yahoo': '%5EIXIC', 'name': 'Nasdaq Composite'},
+    'NDX100': {'yahoo': '%5ENDX',  'name': 'Nasdaq 100'},
+    'DJI':    {'yahoo': '%5EDJI',  'name': 'Dow Jones'},
+    'VIX':    {'yahoo': '%5EVIX',  'name': 'VIX'},
+    'GOLD':   {'yahoo': 'GC%3DF',  'name': 'Gold'},
+    'OIL':    {'yahoo': 'CL%3DF',  'name': 'WTI Crude Oil'},
 }
 
 CHART_URL = (
