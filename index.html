@@ -53,7 +53,7 @@
   .sb button{padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
   .sb button:active{opacity:.8;}
 
-  .sr{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;max-height:220px;overflow-y:auto;display:none;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+  .sr{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;max-height:260px;overflow-y:auto;display:none;box-shadow:0 4px 16px rgba(0,0,0,.1);}
   .sr.show{display:block;}
   .si{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;}
   .si:last-child{border-bottom:none;}
@@ -95,7 +95,7 @@
   .sp{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
   @keyframes spin{to{transform:rotate(360deg);}}
 
-  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(0,0,0,.82);color:#fff;padding:7px 20px;border-radius:16px;font-size:12px;z-index:999;opacity:0;transition:all .25s;pointer-events:none;}
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(0,0,0,.82);color:#fff;padding:7px 20px;border-radius:16px;font-size:12px;z-index:999;opacity:0;transition:all .25s;pointer-events:none;max-width:90vw;text-align:center;}
   .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
   .ft{text-align:center;font-size:10px;color:var(--text2);margin-top:20px;padding:12px;line-height:1.8;}
@@ -147,12 +147,13 @@
 <div class="toast" id="toast"></div>
 
 <script>
-const API = 'https://fundmobapi.eastmoney.com/FundMNewApi/FundMNNetNewList';
+const API_BASE = 'https://fundmobapi.eastmoney.com/FundMNewApi/FundMNNetNewList';
 const PAGE_SIZE = 30;
 
-const US_KW = ['纳斯达克','纳指','标普','美国','美股','美元','s&p','500','nasdaq','道琼斯'];
+const US_KW = ['纳斯达克','纳指','标普','美国','美股','美元','s&p','500','nasdaq','道琼斯',
+               '全球科技','全球互联','信息科技','生物科技','消费品','医疗保健','房地产指数',
+               '油气','石油','黄金主题','全球精选','全球成长','移动互联','中小盘'];
 
-/* 默认关注的热门美股 QDII 基金代码 */
 const DEFAULTS = new Set([
   '160213','040046','270042','006479','012754','014063','014978',
   '050025','161125','013309','007721','008696',
@@ -160,59 +161,49 @@ const DEFAULTS = new Set([
   '486001','162411','070100','118001','164906',
   '001668','006480','000988','013308','014064',
   '002423','010342','017026','017027',
-  '002979','008697','501310','006075'
+  '002979','008697','501310','006075',
+  '000043','000044','161128','012868',
+  '539001','012752','023422','096001','008401',
+  '519981','016452','016453','018043','018044',
+  '019172','019173','017641','019305',
+  '019441','019442','019524','019525',
+  '018966','018967','019547','019548',
+  '017436','017437','162415','009975',
+  '016532','016533','016055','016057',
+  '015299','015300','018064','018065',
+  '017028','017030','019736','019737',
+  '100055','002891','000906'
 ]);
 
 let allFunds = [];
 let curTab = 'all';
 let favs = JSON.parse(localStorage.getItem('qdii_fav') || '[]');
 
-/* ===== API ===== */
+/* ===== fetch helpers ===== */
+function buildURL(page) {
+  return API_BASE + '?fundtype=6&SortColumn=DWJZ&Sort=desc' +
+    '&pageIndex=' + page + '&pageSize=' + PAGE_SIZE +
+    '&deviceid=web&plat=Iphone&product=EFund&version=6.3.1';
+}
+
 async function fetchPage(page) {
-  const params = new URLSearchParams({
-    fundtype: '6', SortColumn: 'DWJZ', Sort: 'desc',
-    pageIndex: page, pageSize: PAGE_SIZE,
-    deviceid: 'web', plat: 'Iphone', product: 'EFund', version: '6.3.1'
-  });
-  const r = await fetch(API + '?' + params);
-  if (!r.ok) throw new Error('HTTP ' + r.status);
-  return r.json();
+  const resp = await fetch(buildURL(page));
+  if (!resp.ok) throw new Error('HTTP ' + resp.status);
+  const json = await resp.json();
+  return json;
 }
 
-async function loadAll() {
-  const btn = document.getElementById('rb');
-  btn.disabled = true; btn.textContent = '加载中';
-  document.getElementById('content').innerHTML = '<div class="ld"><div class="sp"></div><div style="font-size:13px;color:var(--text2)">正在获取基金数据...</div></div>';
-
-  try {
-    const first = await fetchPage(1);
-    const total = first.TotalCount || 0;
-    const pages = Math.ceil(total / PAGE_SIZE);
-    let funds = extractFunds(first);
-
-    const tasks = [];
-    for (let p = 2; p <= Math.min(pages, 30); p++) tasks.push(fetchPage(p));
-    const results = await Promise.all(tasks);
-    for (const r of results) funds = funds.concat(extractFunds(r));
-
-    allFunds = funds;
-    const now = new Date();
-    document.getElementById('ut').textContent = fmt(now) + ' 更新';
-    render();
-    toast('已加载 ' + allFunds.length + ' 只QDII基金');
-  } catch (e) {
-    console.error(e);
-    document.getElementById('content').innerHTML = '<div class="emp"><div class="ic">&#9888;&#65039;</div>加载失败，请稍后重试<br><small>' + esc(e.message) + '</small></div>';
-    document.getElementById('ut').textContent = '加载失败';
-  }
-  btn.disabled = false; btn.textContent = '刷新';
-}
-
-function extractFunds(resp) {
+function extractFunds(json) {
   const out = [];
-  for (const g of (resp.Datas || [])) {
-    if (Array.isArray(g)) g.forEach(f => out.push(normFund(f)));
-    else if (g && typeof g === 'object') out.push(normFund(g));
+  const datas = json.Datas || json.datas || [];
+  for (const item of datas) {
+    if (Array.isArray(item)) {
+      for (const f of item) {
+        if (f && f.FCODE) out.push(normFund(f));
+      }
+    } else if (item && typeof item === 'object' && item.FCODE) {
+      out.push(normFund(item));
+    }
   }
   return out;
 }
@@ -222,7 +213,10 @@ function normFund(f) {
   let status = 'closed', statusText = sgzt || '暂停申购';
   if (sgzt.includes('开放')) { status = 'open'; statusText = '开放申购'; }
   else if (sgzt.includes('限大额') || sgzt.includes('限制大额')) { status = 'limit'; statusText = '限大额'; }
-  else if (sgzt.includes('暂停') || sgzt.includes('封闭')) { status = 'closed'; }
+  else if (sgzt.includes('暂停')) { status = 'closed'; statusText = '暂停申购'; }
+  else if (sgzt.includes('封闭')) { status = 'closed'; statusText = '封闭期'; }
+  else if (sgzt.includes('场内')) { status = 'closed'; statusText = '场内交易'; }
+  else if (sgzt === '') { status = 'closed'; statusText = '暂停申购'; }
 
   return {
     code: f.FCODE || '',
@@ -230,19 +224,62 @@ function normFund(f) {
     nav: f.DWJZ || '--',
     navDate: f.FSRQ || '--',
     dayChange: f.RZDF || '--',
-    status, statusText,
-    isBuy: f.ISBUY === '1' || f.ISBUY === 1 || f.BUY === true,
+    status, statusText
   };
 }
 
+/* ===== load all ===== */
+async function loadAll() {
+  const btn = document.getElementById('rb');
+  btn.disabled = true; btn.textContent = '加载中';
+  document.getElementById('content').innerHTML =
+    '<div class="ld"><div class="sp"></div><div style="font-size:13px;color:var(--text2)">正在获取基金数据...</div></div>';
+
+  try {
+    const first = await fetchPage(1);
+    const total = first.TotalCount || first.totalCount || 0;
+    let funds = extractFunds(first);
+
+    if (total > PAGE_SIZE) {
+      const pages = Math.min(Math.ceil(total / PAGE_SIZE), 30);
+      const tasks = [];
+      for (let p = 2; p <= pages; p++) tasks.push(fetchPage(p));
+      const results = await Promise.allSettled(tasks);
+      for (const r of results) {
+        if (r.status === 'fulfilled') funds = funds.concat(extractFunds(r.value));
+      }
+    }
+
+    allFunds = funds;
+
+    if (allFunds.length === 0) {
+      throw new Error('API 返回数据为空 (TotalCount=' + total + ', Datas keys=' +
+        Object.keys(first).join(',') + ')');
+    }
+
+    const now = new Date();
+    document.getElementById('ut').textContent = fmt(now) + ' 更新';
+    render();
+    toast('已加载 ' + allFunds.length + ' 只QDII基金');
+  } catch (e) {
+    console.error('loadAll error:', e);
+    document.getElementById('content').innerHTML =
+      '<div class="emp"><div class="ic">&#9888;</div>加载失败<br><small style="word-break:break-all">' +
+      esc(e.message) + '</small></div>';
+    document.getElementById('ut').textContent = '加载失败';
+  }
+  btn.disabled = false; btn.textContent = '刷新';
+}
+
+/* ===== filter logic ===== */
 function isUS(f) {
   const n = f.name.toLowerCase();
-  return US_KW.some(k => n.includes(k)) || DEFAULTS.has(f.code);
+  return DEFAULTS.has(f.code) || US_KW.some(k => n.includes(k.toLowerCase()));
 }
 
 function shown(f) { return isUS(f) || favs.includes(f.code); }
 
-/* ===== Render ===== */
+/* ===== render ===== */
 function render() {
   const vis = allFunds.filter(shown);
   const nO = vis.filter(f => f.status === 'open').length;
@@ -272,8 +309,10 @@ function render() {
   list.sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name, 'zh'));
 
   if (!list.length) {
-    document.getElementById('content').innerHTML = '<div class="emp"><div class="ic">&#128203;</div>' +
-      (curTab === 'fav' ? '还没有自选基金<br>使用上方搜索添加' : '当前分类无基金') + '</div>';
+    const msg = curTab === 'fav'
+      ? '还没有自选基金<br>使用上方搜索添加'
+      : (allFunds.length === 0 ? '数据加载中...' : '当前分类无基金');
+    document.getElementById('content').innerHTML = '<div class="emp"><div class="ic">&#128203;</div>' + msg + '</div>';
     return;
   }
 
@@ -294,28 +333,29 @@ function render() {
         '<div class="it"><span>日涨跌</span><span class="v" style="color:' + dcol + '">' + dc + '</span></div>' +
         '<div class="it"><span>净值日期</span><span class="v">' + f.navDate + '</span></div>' +
       '</div>' +
-      (isFav ? '<div class="acts"><button class="xb" onclick="rmFav(\'' + f.code + '\')" title="移除自选">✕</button></div>' : '') +
+      (isFav ? '<div class="acts"><button class="xb" onclick="rmFav(\'' + f.code + '\')" title="移除自选">&#10005;</button></div>' : '') +
     '</div>';
   }
   h += '</div>';
   document.getElementById('content').innerHTML = h;
 }
 
-/* ===== Tabs ===== */
+/* ===== tabs ===== */
 function setTab(t) {
   curTab = t;
   document.querySelectorAll('.tb').forEach(el => el.classList.toggle('on', el.dataset.f === t));
   render();
 }
 
-/* ===== Search ===== */
+/* ===== search ===== */
 function doSearch() {
   const kw = document.getElementById('si').value.trim().toLowerCase();
   if (!kw) { hideSearch(); return; }
   const res = allFunds.filter(f => f.code.includes(kw) || f.name.toLowerCase().includes(kw));
   const box = document.getElementById('srBox');
   if (!res.length) {
-    box.innerHTML = '<div class="si"><span style="color:var(--text2)">没有匹配的基金</span></div>';
+    box.innerHTML = '<div class="si"><span style="color:var(--text2)">没有匹配的基金' +
+      (allFunds.length === 0 ? '（数据尚未加载）' : '') + '</span></div>';
   } else {
     box.innerHTML = res.slice(0, 30).map(f => {
       const added = favs.includes(f.code);
@@ -336,7 +376,7 @@ document.addEventListener('click', e => {
   if (!e.target.closest('.sb') && !e.target.closest('.sr')) hideSearch();
 });
 
-/* ===== Favorites ===== */
+/* ===== favorites ===== */
 function addFav(code, btn) {
   if (favs.includes(code)) return;
   favs.push(code);
@@ -355,14 +395,14 @@ function rmFav(code) {
 
 function saveFavs() { localStorage.setItem('qdii_fav', JSON.stringify(favs)); }
 
-/* ===== Utils ===== */
+/* ===== utils ===== */
 function refresh() { loadAll(); }
 
 function toast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg; t.classList.add('show');
   clearTimeout(t._tid);
-  t._tid = setTimeout(() => t.classList.remove('show'), 2000);
+  t._tid = setTimeout(() => t.classList.remove('show'), 2500);
 }
 
 function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
@@ -373,7 +413,7 @@ function fmt(d) {
     p(d.getHours()) + ':' + p(d.getMinutes());
 }
 
-/* ===== Init ===== */
+/* ===== start ===== */
 loadAll();
 </script>
 </body>
