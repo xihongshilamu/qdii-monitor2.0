@@ -45,6 +45,15 @@ jobs:
             git push
           fi
 
+      - name: Send daily email
+        if: github.event_name == 'schedule'
+        env:
+          EMAIL_TO: ${{ secrets.EMAIL_TO }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: python scripts/send_email.py
+
   deploy:
     needs: fetch
     environment:
