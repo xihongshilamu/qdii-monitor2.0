@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>QDII 美股基金额度助手</title>
+<style>
+  :root {
+    --bg: #f0f2f5;
+    --card: #fff;
+    --text: #1a1a2e;
+    --text2: #6b7280;
+    --border: #e5e7eb;
+    --accent: #2563eb;
+    --green: #059669;
+    --green-bg: #ecfdf5;
+    --orange: #d97706;
+    --orange-bg: #fffbeb;
+    --red: #dc2626;
+    --red-bg: #fef2f2;
+    --gray-bg: #f3f4f6;
+    --shadow: 0 1px 3px rgba(0,0,0,.06), 0 1px 2px rgba(0,0,0,.04);
+    --radius: 12px;
+  }
+  @media(prefers-color-scheme:dark){
+    :root{--bg:#0f172a;--card:#1e293b;--text:#f1f5f9;--text2:#94a3b8;--border:#334155;
+      --green-bg:#052e16;--orange-bg:#422006;--red-bg:#450a0a;--gray-bg:#1e293b;
+      --shadow:0 1px 3px rgba(0,0,0,.3);}
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:var(--bg);color:var(--text);-webkit-font-smoothing:antialiased;}
+  .hd{background:linear-gradient(135deg,#1e40af,#3b82f6);color:#fff;padding:20px 16px 16px;text-align:center;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(30,64,175,.3);}
+  .hd h1{font-size:18px;font-weight:700;letter-spacing:.5px;}
+  .hd .sub{font-size:12px;opacity:.75;margin-top:2px;}
+  .hd .bar{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:10px;font-size:11px;opacity:.85;}
+  .btn-r{background:rgba(255,255,255,.18);border:1px solid rgba(255,255,255,.25);color:#fff;padding:4px 14px;border-radius:16px;font-size:11px;cursor:pointer;}
+  .btn-r:active{background:rgba(255,255,255,.3);}
+  .btn-r:disabled{opacity:.4;}
+  .wrap{max-width:560px;margin:0 auto;padding:10px 12px 60px;}
+
+  .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:10px 0;}
+  .st{background:var(--card);border-radius:10px;padding:10px 8px;text-align:center;box-shadow:var(--shadow);}
+  .st .n{font-size:24px;font-weight:800;line-height:1.2;}
+  .st .l{font-size:11px;color:var(--text2);margin-top:2px;}
+  .st.g .n{color:var(--green);}
+  .st.o .n{color:var(--orange);}
+  .st.r .n{color:var(--red);}
+
+  .sb{display:flex;gap:8px;margin:10px 0;}
+  .sb input{flex:1;padding:9px 12px;border:1.5px solid var(--border);border-radius:10px;font-size:14px;background:var(--card);color:var(--text);outline:none;transition:border .2s;}
+  .sb input:focus{border-color:var(--accent);}
+  .sb input::placeholder{color:var(--text2);}
+  .sb button{padding:9px 16px;background:var(--accent);color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
+  .sb button:active{opacity:.8;}
+
+  .sr{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);margin-bottom:8px;max-height:220px;overflow-y:auto;display:none;box-shadow:0 4px 16px rgba(0,0,0,.1);}
+  .sr.show{display:block;}
+  .si{display:flex;align-items:center;justify-content:space-between;padding:10px 12px;border-bottom:1px solid var(--border);font-size:13px;}
+  .si:last-child{border-bottom:none;}
+  .si .inf{flex:1;min-width:0;}
+  .si .nm{font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+  .si .cd{color:var(--text2);font-size:11px;margin-top:1px;}
+  .ba{padding:4px 12px;background:var(--accent);color:#fff;border:none;border-radius:6px;font-size:11px;font-weight:600;cursor:pointer;flex-shrink:0;margin-left:8px;}
+  .ba.done{background:#9ca3af;cursor:default;}
+
+  .tabs{display:flex;gap:5px;margin:10px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;}
+  .tabs::-webkit-scrollbar{display:none;}
+  .tb{padding:6px 12px;border-radius:16px;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;border:1.5px solid var(--border);background:var(--card);color:var(--text2);transition:all .15s;user-select:none;}
+  .tb.on{background:var(--accent);color:#fff;border-color:var(--accent);}
+  .tb .c{font-size:10px;margin-left:3px;opacity:.7;}
+
+  .fl{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+  .fc{background:var(--card);border-radius:var(--radius);padding:12px 14px;box-shadow:var(--shadow);border-left:4px solid #9ca3af;position:relative;transition:transform .1s;}
+  .fc:active{transform:scale(.985);}
+  .fc.s-o{border-left-color:var(--green);background:var(--green-bg);}
+  .fc.s-l{border-left-color:var(--orange);background:var(--orange-bg);}
+  .fc.s-c{border-left-color:var(--red);background:var(--red-bg);}
+  .fc .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;}
+  .fc .nm{font-size:14px;font-weight:700;line-height:1.35;flex:1;min-width:0;}
+  .fc .cd{font-size:11px;color:var(--text2);margin-top:1px;}
+  .bdg{padding:3px 10px;border-radius:10px;font-size:10px;font-weight:700;white-space:nowrap;flex-shrink:0;letter-spacing:.3px;}
+  .bdg.bo{background:var(--green);color:#fff;}
+  .bdg.bl{background:var(--orange);color:#fff;}
+  .bdg.bc{background:var(--red);color:#fff;}
+  .fc .info{display:flex;gap:14px;margin-top:8px;font-size:11px;color:var(--text2);}
+  .fc .info .it{display:flex;flex-direction:column;gap:1px;}
+  .fc .info .v{font-size:13px;font-weight:700;color:var(--text);}
+  .fc .acts{position:absolute;right:8px;bottom:8px;}
+  .xb{background:none;border:none;color:var(--text2);font-size:14px;cursor:pointer;padding:4px 6px;opacity:.4;transition:opacity .2s;}
+  .xb:hover,.xb:active{opacity:1;color:var(--red);}
+
+  .emp{text-align:center;padding:36px 20px;color:var(--text2);font-size:13px;line-height:1.6;}
+  .emp .ic{font-size:40px;margin-bottom:8px;}
+  .ld{text-align:center;padding:40px;}
+  .sp{width:28px;height:28px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite;margin:0 auto 10px;}
+  @keyframes spin{to{transform:rotate(360deg);}}
+
+  .toast{position:fixed;bottom:70px;left:50%;transform:translateX(-50%) translateY(16px);background:rgba(0,0,0,.82);color:#fff;padding:7px 20px;border-radius:16px;font-size:12px;z-index:999;opacity:0;transition:all .25s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+  .ft{text-align:center;font-size:10px;color:var(--text2);margin-top:20px;padding:12px;line-height:1.8;}
+  @media(max-width:380px){.fc .info{gap:8px;}.fc .info .v{font-size:12px;}.stats{gap:6px;}}
+</style>
+</head>
+<body>
+
+<div class="hd">
+  <h1>QDII 美股基金额度助手</h1>
+  <div class="sub">实时查看美股QDII基金申购限额</div>
+  <div class="bar">
+    <span id="ut">加载中...</span>
+    <button class="btn-r" id="rb" onclick="refresh()">刷新</button>
+  </div>
+</div>
+
+<div class="wrap">
+  <div class="stats" id="statsBox" style="display:none">
+    <div class="st g"><div class="n" id="sO">0</div><div class="l">可买入</div></div>
+    <div class="st o"><div class="n" id="sL">0</div><div class="l">限大额</div></div>
+    <div class="st r"><div class="n" id="sC">0</div><div class="l">暂停申购</div></div>
+  </div>
+
+  <div class="sb">
+    <input id="si" placeholder="输入基金代码或名称搜索..." autocomplete="off">
+    <button onclick="doSearch()">搜索</button>
+  </div>
+  <div class="sr" id="srBox"></div>
+
+  <div class="tabs" id="tabsBox">
+    <div class="tb on" data-f="all" onclick="setTab('all')">全部<span class="c" id="ca"></span></div>
+    <div class="tb" data-f="open" onclick="setTab('open')">可买入<span class="c" id="co"></span></div>
+    <div class="tb" data-f="limit" onclick="setTab('limit')">限大额<span class="c" id="cl"></span></div>
+    <div class="tb" data-f="closed" onclick="setTab('closed')">暂停<span class="c" id="cc"></span></div>
+    <div class="tb" data-f="fav" onclick="setTab('fav')">自选<span class="c" id="cf"></span></div>
+  </div>
+
+  <div id="content">
+    <div class="ld"><div class="sp"></div><div style="font-size:13px;color:var(--text2)">正在获取基金数据...</div></div>
+  </div>
+
+  <div class="ft">
+    数据来源：天天基金（东方财富）<br>
+    仅供参考，实际限额以基金公司最新公告为准
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const API = 'https://fundmobapi.eastmoney.com/FundMNewApi/FundMNNetNewList';
+const PAGE_SIZE = 30;
+
+const US_KW = ['纳斯达克','纳指','标普','美国','美股','美元','s&p','500','nasdaq','道琼斯'];
+
+/* 默认关注的热门美股 QDII 基金代码 */
+const DEFAULTS = new Set([
+  '160213','040046','270042','006479','012754','014063','014978',
+  '050025','161125','013309','007721','008696',
+  '000834','040048','003721','005241','012906',
+  '486001','162411','070100','118001','164906',
+  '001668','006480','000988','013308','014064',
+  '002423','010342','017026','017027',
+  '002979','008697','501310','006075'
+]);
+
+let allFunds = [];
+let curTab = 'all';
+let favs = JSON.parse(localStorage.getItem('qdii_fav') || '[]');
+
+/* ===== API ===== */
+async function fetchPage(page) {
+  const params = new URLSearchParams({
+    fundtype: '6', SortColumn: 'DWJZ', Sort: 'desc',
+    pageIndex: page, pageSize: PAGE_SIZE,
+    deviceid: 'web', plat: 'Iphone', product: 'EFund', version: '6.3.1'
+  });
+  const r = await fetch(API + '?' + params);
+  if (!r.ok) throw new Error('HTTP ' + r.status);
+  return r.json();
+}
+
+async function loadAll() {
+  const btn = document.getElementById('rb');
+  btn.disabled = true; btn.textContent = '加载中';
+  document.getElementById('content').innerHTML = '<div class="ld"><div class="sp"></div><div style="font-size:13px;color:var(--text2)">正在获取基金数据...</div></div>';
+
+  try {
+    const first = await fetchPage(1);
+    const total = first.TotalCount || 0;
+    const pages = Math.ceil(total / PAGE_SIZE);
+    let funds = extractFunds(first);
+
+    const tasks = [];
+    for (let p = 2; p <= Math.min(pages, 30); p++) tasks.push(fetchPage(p));
+    const results = await Promise.all(tasks);
+    for (const r of results) funds = funds.concat(extractFunds(r));
+
+    allFunds = funds;
+    const now = new Date();
+    document.getElementById('ut').textContent = fmt(now) + ' 更新';
+    render();
+    toast('已加载 ' + allFunds.length + ' 只QDII基金');
+  } catch (e) {
+    console.error(e);
+    document.getElementById('content').innerHTML = '<div class="emp"><div class="ic">&#9888;&#65039;</div>加载失败，请稍后重试<br><small>' + esc(e.message) + '</small></div>';
+    document.getElementById('ut').textContent = '加载失败';
+  }
+  btn.disabled = false; btn.textContent = '刷新';
+}
+
+function extractFunds(resp) {
+  const out = [];
+  for (const g of (resp.Datas || [])) {
+    if (Array.isArray(g)) g.forEach(f => out.push(normFund(f)));
+    else if (g && typeof g === 'object') out.push(normFund(g));
+  }
+  return out;
+}
+
+function normFund(f) {
+  const sgzt = (f.SGZT || '').trim();
+  let status = 'closed', statusText = sgzt || '暂停申购';
+  if (sgzt.includes('开放')) { status = 'open'; statusText = '开放申购'; }
+  else if (sgzt.includes('限大额') || sgzt.includes('限制大额')) { status = 'limit'; statusText = '限大额'; }
+  else if (sgzt.includes('暂停') || sgzt.includes('封闭')) { status = 'closed'; }
+
+  return {
+    code: f.FCODE || '',
+    name: f.SHORTNAME || '',
+    nav: f.DWJZ || '--',
+    navDate: f.FSRQ || '--',
+    dayChange: f.RZDF || '--',
+    status, statusText,
+    isBuy: f.ISBUY === '1' || f.ISBUY === 1 || f.BUY === true,
+  };
+}
+
+function isUS(f) {
+  const n = f.name.toLowerCase();
+  return US_KW.some(k => n.includes(k)) || DEFAULTS.has(f.code);
+}
+
+function shown(f) { return isUS(f) || favs.includes(f.code); }
+
+/* ===== Render ===== */
+function render() {
+  const vis = allFunds.filter(shown);
+  const nO = vis.filter(f => f.status === 'open').length;
+  const nL = vis.filter(f => f.status === 'limit').length;
+  const nC = vis.filter(f => f.status === 'closed').length;
+  const nF = favs.length;
+
+  document.getElementById('statsBox').style.display = 'grid';
+  document.getElementById('sO').textContent = nO;
+  document.getElementById('sL').textContent = nL;
+  document.getElementById('sC').textContent = nC;
+
+  document.getElementById('ca').textContent = nO + nL + nC;
+  document.getElementById('co').textContent = nO;
+  document.getElementById('cl').textContent = nL;
+  document.getElementById('cc').textContent = nC;
+  document.getElementById('cf').textContent = nF;
+
+  let list;
+  if (curTab === 'fav') list = allFunds.filter(f => favs.includes(f.code));
+  else {
+    list = vis;
+    if (curTab !== 'all') list = list.filter(f => f.status === curTab);
+  }
+
+  const order = { open: 0, limit: 1, closed: 2 };
+  list.sort((a, b) => order[a.status] - order[b.status] || a.name.localeCompare(b.name, 'zh'));
+
+  if (!list.length) {
+    document.getElementById('content').innerHTML = '<div class="emp"><div class="ic">&#128203;</div>' +
+      (curTab === 'fav' ? '还没有自选基金<br>使用上方搜索添加' : '当前分类无基金') + '</div>';
+    return;
+  }
+
+  let h = '<div class="fl">';
+  for (const f of list) {
+    const isFav = favs.includes(f.code);
+    const sc = f.status === 'open' ? 's-o' : f.status === 'limit' ? 's-l' : 's-c';
+    const bc = f.status === 'open' ? 'bo' : f.status === 'limit' ? 'bl' : 'bc';
+    const dc = f.dayChange !== '--' ? (parseFloat(f.dayChange) >= 0 ? '+' : '') + f.dayChange + '%' : '--';
+    const dcol = f.dayChange !== '--' ? (parseFloat(f.dayChange) >= 0 ? 'var(--red)' : 'var(--green)') : 'var(--text2)';
+
+    h += '<div class="fc ' + sc + '">' +
+      '<div class="top"><div><div class="nm">' + esc(f.name) + '</div>' +
+      '<div class="cd">' + f.code + '</div></div>' +
+      '<span class="bdg ' + bc + '">' + esc(f.statusText) + '</span></div>' +
+      '<div class="info">' +
+        '<div class="it"><span>最新净值</span><span class="v">' + f.nav + '</span></div>' +
+        '<div class="it"><span>日涨跌</span><span class="v" style="color:' + dcol + '">' + dc + '</span></div>' +
+        '<div class="it"><span>净值日期</span><span class="v">' + f.navDate + '</span></div>' +
+      '</div>' +
+      (isFav ? '<div class="acts"><button class="xb" onclick="rmFav(\'' + f.code + '\')" title="移除自选">✕</button></div>' : '') +
+    '</div>';
+  }
+  h += '</div>';
+  document.getElementById('content').innerHTML = h;
+}
+
+/* ===== Tabs ===== */
+function setTab(t) {
+  curTab = t;
+  document.querySelectorAll('.tb').forEach(el => el.classList.toggle('on', el.dataset.f === t));
+  render();
+}
+
+/* ===== Search ===== */
+function doSearch() {
+  const kw = document.getElementById('si').value.trim().toLowerCase();
+  if (!kw) { hideSearch(); return; }
+  const res = allFunds.filter(f => f.code.includes(kw) || f.name.toLowerCase().includes(kw));
+  const box = document.getElementById('srBox');
+  if (!res.length) {
+    box.innerHTML = '<div class="si"><span style="color:var(--text2)">没有匹配的基金</span></div>';
+  } else {
+    box.innerHTML = res.slice(0, 30).map(f => {
+      const added = favs.includes(f.code);
+      return '<div class="si"><div class="inf"><div class="nm">' + esc(f.name) + '</div>' +
+        '<div class="cd">' + f.code + ' · ' + esc(f.statusText) + '</div></div>' +
+        '<button class="ba' + (added ? ' done' : '') + '" onclick="addFav(\'' + f.code + '\',this)">' +
+        (added ? '已添加' : '+ 自选') + '</button></div>';
+    }).join('');
+  }
+  box.classList.add('show');
+}
+
+function hideSearch() { document.getElementById('srBox').classList.remove('show'); }
+
+document.getElementById('si').addEventListener('keydown', e => { if (e.key === 'Enter') doSearch(); });
+document.getElementById('si').addEventListener('input', function() { if (!this.value.trim()) hideSearch(); });
+document.addEventListener('click', e => {
+  if (!e.target.closest('.sb') && !e.target.closest('.sr')) hideSearch();
+});
+
+/* ===== Favorites ===== */
+function addFav(code, btn) {
+  if (favs.includes(code)) return;
+  favs.push(code);
+  saveFavs();
+  if (btn) { btn.textContent = '已添加'; btn.classList.add('done'); }
+  render();
+  toast('已添加到自选');
+}
+
+function rmFav(code) {
+  favs = favs.filter(c => c !== code);
+  saveFavs();
+  render();
+  toast('已移除自选');
+}
+
+function saveFavs() { localStorage.setItem('qdii_fav', JSON.stringify(favs)); }
+
+/* ===== Utils ===== */
+function refresh() { loadAll(); }
+
+function toast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  clearTimeout(t._tid);
+  t._tid = setTimeout(() => t.classList.remove('show'), 2000);
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+function fmt(d) {
+  const p = n => (n < 10 ? '0' : '') + n;
+  return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + ' ' +
+    p(d.getHours()) + ':' + p(d.getMinutes());
+}
+
+/* ===== Init ===== */
+loadAll();
+</script>
+</body>
+</html>
