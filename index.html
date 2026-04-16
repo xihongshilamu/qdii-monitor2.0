@@ -39,7 +39,7 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 .ticker .status-tag.post{background:rgba(139,92,246,.15);color:#a78bfa}
 .ticker .status-tag.closed{background:rgba(255,255,255,.05);color:var(--dim)}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-.ticker .clock-area{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:10px}
+.ticker .clock-area{margin-left:auto;display:flex;align-items:center;gap:8px;padding-right:10px;flex-shrink:0}
 .ticker .clock{color:var(--dim);font-size:11px;white-space:nowrap;font-family:'JetBrains Mono',monospace}
 .ticker .mkt-status{font-size:10px;font-weight:600;white-space:nowrap}
 
@@ -73,7 +73,7 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 
 /* === MAIN === */
 .main{flex:1;display:flex;flex-direction:column;overflow:hidden}
-.mhd{padding:12px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border)}
+.mhd{padding:10px 16px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--border);flex-shrink:0}
 .mhd .mleft{display:flex;align-items:baseline;gap:10px}
 .mhd .midx{font-size:16px;font-weight:700}
 .mhd .mprice{font-size:28px;font-weight:800;font-family:'JetBrains Mono',monospace;letter-spacing:-1px}
@@ -82,10 +82,10 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 .chartbox{flex:1;position:relative;min-height:0}
 
 /* === DETAIL === */
-.detail{border-top:1px solid var(--border);padding:12px 16px;display:flex;flex-wrap:wrap;gap:6px 0;background:rgba(12,20,38,.4)}
-.ditem{flex:1;min-width:110px;padding:6px 10px;border-radius:var(--radius-sm)}
-.ditem .dl{color:var(--dim);font-size:10px;font-weight:500;margin-bottom:2px}
-.ditem .dv{font-weight:700;font-size:14px;font-family:'JetBrains Mono',monospace}
+.detail{border-top:1px solid var(--border);padding:10px 16px;display:flex;flex-wrap:wrap;gap:4px 0;background:rgba(12,20,38,.4);flex-shrink:0}
+.ditem{flex:1;min-width:100px;padding:4px 8px;border-radius:var(--radius-sm)}
+.ditem .dl{color:var(--dim);font-size:10px;font-weight:500;margin-bottom:1px}
+.ditem .dv{font-weight:700;font-size:13px;font-family:'JetBrains Mono',monospace}
 
 /* === RIGHT === */
 .right{width:230px;min-width:210px;display:flex;flex-direction:column;flex-shrink:0;border-left:1px solid var(--border);background:rgba(12,20,38,.3);overflow-y:auto}
@@ -106,12 +106,38 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(10px);background:rgba(30,40,70,.9);backdrop-filter:blur(10px);color:#fff;padding:8px 20px;border-radius:20px;border:1px solid var(--border);font-size:12px;opacity:0;transition:all .25s;pointer-events:none;z-index:999}
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 
+/* MODAL */
+.modal-mask{position:fixed;inset:0;background:rgba(0,0,0,.55);backdrop-filter:blur(4px);z-index:900;display:none;align-items:center;justify-content:center}
+.modal-mask.show{display:flex}
+.modal{background:#131b32;border:1px solid var(--border);border-radius:var(--radius);padding:24px;width:420px;max-width:90vw;max-height:80vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.5)}
+.modal h3{font-size:16px;font-weight:700;margin-bottom:16px}
+.modal label{display:block;font-size:11px;color:var(--dim);font-weight:600;margin-bottom:4px;margin-top:12px}
+.modal input[type=email],.modal input[type=text]{width:100%;padding:8px 12px;background:var(--glass);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:13px;outline:none}
+.modal input:focus{border-color:var(--accent)}
+.modal .hint{font-size:10px;color:var(--dim);margin-top:4px;line-height:1.5}
+.modal .btn-row{display:flex;gap:8px;margin-top:20px}
+.modal .btn{flex:1;padding:8px 0;text-align:center;border-radius:var(--radius-sm);font-size:13px;font-weight:600;cursor:pointer;border:none;transition:all .2s}
+.modal .btn-primary{background:var(--accent);color:#fff}.modal .btn-primary:hover{background:#4a8be0}
+.modal .btn-secondary{background:var(--glass2);color:var(--text);border:1px solid var(--border)}.modal .btn-secondary:hover{background:var(--glass)}
+.email-preview{margin-top:16px;background:var(--glass);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px;font-size:11px;line-height:1.6;max-height:200px;overflow-y:auto;white-space:pre-wrap;color:var(--dim)}
+
+/* GEAR ICON */
+.gear-btn{width:32px;height:32px;display:flex;align-items:center;justify-content:center;border-radius:8px;cursor:pointer;color:var(--dim);transition:all .2s;flex-shrink:0}
+.gear-btn:hover{background:var(--glass2);color:var(--text)}
+.gear-btn svg{width:16px;height:16px}
+
 /* MOBILE */
 @media(max-width:960px){
   .right{display:none}
-  .left{width:100%;min-width:0;max-height:45vh;border-right:none;border-bottom:1px solid var(--border)}
+  .left{width:100%;min-width:0;max-height:40vh;border-right:none;border-bottom:1px solid var(--border)}
   .shell{flex-direction:column}
-  .main{min-height:280px}
+  .main{flex:1;min-height:0;display:flex;flex-direction:column}
+  .chartbox{flex:1;min-height:180px}
+  .detail{flex-wrap:nowrap;overflow-x:auto;gap:0;padding:8px 10px}
+  .ditem{min-width:80px;flex:0 0 auto;padding:4px 6px}
+  .ditem .dv{font-size:11px}
+  .mhd .mprice{font-size:22px}
+  .mhd{padding:8px 12px}
 }
 @media(max-width:600px){
   .ticker .logo{padding:0 8px;font-size:12px}
@@ -119,8 +145,10 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
   .ticker .sym{font-size:9px}
   .ticker .price{font-size:11px}
   .ticker .chg{font-size:9px}
-  .left{max-height:40vh}
-  .mhd .mprice{font-size:22px}
+  .left{max-height:35vh}
+  .mhd .mprice{font-size:20px}
+  .mhd .midx{font-size:14px}
+  .detail .ditem{min-width:70px}
 }
 </style>
 </head>
@@ -144,9 +172,14 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 <div class="shell">
   <div class="left">
     <div class="lhd">
-      <div class="search-box">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-        <input id="searchInput" placeholder="搜索基金代码或名称..." autocomplete="off">
+      <div style="display:flex;gap:6px;align-items:center">
+        <div class="search-box" style="flex:1">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+          <input id="searchInput" placeholder="搜索基金代码或名称..." autocomplete="off">
+        </div>
+        <div class="gear-btn" onclick="openEmailModal()" title="邮件推送设置">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        </div>
       </div>
       <div class="tabs">
         <div class="tab on" data-f="all" onclick="setTab('all')">全部</div>
@@ -170,7 +203,7 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
     </div>
     <div class="chartbox" id="chartBox"></div>
     <div class="detail" id="detailPanel">
-      <div class="ditem"><div class="dl">选中基金</div><div class="dv" id="dFund" style="font-family:inherit;font-size:13px;font-weight:600">点击左侧列表选择</div></div>
+      <div class="ditem"><div class="dl">选中基金</div><div class="dv" id="dFund" style="font-family:inherit;font-size:12px;font-weight:600">点击左侧列表选择</div></div>
       <div class="ditem"><div class="dl">最新净值</div><div class="dv" id="dNav">--</div></div>
       <div class="ditem"><div class="dl">实时估值</div><div class="dv" id="dEst">--</div></div>
       <div class="ditem"><div class="dl">估值涨跌</div><div class="dv" id="dEstChg">--</div></div>
@@ -212,6 +245,33 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
   </div>
 </div>
 
+<!-- Email Modal -->
+<div class="modal-mask" id="emailModal">
+  <div class="modal">
+    <h3>📬 邮件推送设置</h3>
+    <label>接收邮箱</label>
+    <input type="email" id="emailAddr" placeholder="your@email.com">
+    <div class="hint">每个工作日早上 9:30（北京时间）自动推送自选基金的购买额度汇总到此邮箱。</div>
+    <label>推送内容预览</label>
+    <div class="email-preview" id="emailPreview">加载中...</div>
+    <div class="btn-row">
+      <button class="btn btn-secondary" onclick="closeEmailModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveEmailConfig()">保存配置</button>
+    </div>
+    <div class="hint" style="margin-top:12px">
+      ⚙️ 邮件通过 GitHub Actions 定时发送。保存后需在仓库 Settings → Secrets 中配置：<br>
+      <code>EMAIL_TO</code> = 接收邮箱<br>
+      <code>SMTP_HOST</code> = SMTP 服务器地址<br>
+      <code>SMTP_USER</code> = SMTP 用户名<br>
+      <code>SMTP_PASS</code> = SMTP 密码/授权码<br>
+      或点击下方按钮直接通过邮件客户端发送。
+    </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-secondary" onclick="sendViaMailto()">📧 通过邮件客户端发送</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -244,7 +304,6 @@ var DEFAULTS=new Set([
   '100055','002891','000906'
 ]);
 
-/* Push2 secid mapping — includes NDX100 and OIL */
 var PUSH2_MAP={
   SPX:'100.SPX',NDX:'100.NDX',NDX100:'100.NDX100',
   DJI:'100.DJIA',VIX:'100.VIX',OIL:'102.CL00Y'
@@ -253,7 +312,6 @@ var IDX_NAMES={
   SPX:'标普 500',NDX:'纳斯达克综合',NDX100:'纳斯达克 100',
   DJI:'道琼斯工业',VIX:'VIX 恐慌指数',GOLD:'国际黄金',OIL:'WTI 原油'
 };
-/* Push2 price divisors: most indices divide by 100, oil divides by 100 too */
 var PRICE_DIV={SPX:100,NDX:100,NDX100:100,DJI:100,VIX:100,OIL:100};
 var ALL_KEYS=['SPX','NDX','NDX100','DJI','OIL','VIX','GOLD'];
 
@@ -264,7 +322,7 @@ function fmtPct(v){if(v==null)return'--';var n=parseFloat(v);if(isNaN(n))return'
 function fmtPrice(v,dec){if(v==null)return'--';dec=dec||2;return parseFloat(v).toLocaleString('en',{minimumFractionDigits:dec,maximumFractionDigits:dec})}
 function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(t._t);t._t=setTimeout(function(){t.classList.remove('show')},2200)}
 
-/* ========== Market status (US Eastern Time) ========== */
+/* ========== Market status ========== */
 function getUSMarketStatus(){
   var now=new Date();
   var et=new Date(now.toLocaleString('en-US',{timeZone:'America/New_York'}));
@@ -276,7 +334,6 @@ function getUSMarketStatus(){
   if(t<1200)return{status:'post',label:'盘后',cls:'post',et:et};
   return{status:'closed',label:'休市',cls:'closed',et:et};
 }
-
 function updateClock(){
   var now=new Date(),h=now.getHours(),m=now.getMinutes(),s=now.getSeconds();
   document.getElementById('clock').textContent=String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(s).padStart(2,'0');
@@ -285,8 +342,7 @@ function updateClock(){
   var etStr=String(ms.et.getHours()).padStart(2,'0')+':'+String(ms.et.getMinutes()).padStart(2,'0');
   el.innerHTML='<span class="status-tag '+ms.cls+'">'+ms.label+'</span> <span style="color:var(--dim);font-size:10px">美东 '+etStr+'</span>';
 }
-setInterval(updateClock,1000);
-updateClock();
+setInterval(updateClock,1000);updateClock();
 
 /* ========== Data loading ========== */
 async function loadData(){
@@ -294,12 +350,11 @@ async function loadData(){
     var [fR,mR]=await Promise.all([fetch('data.json?v='+Date.now()),fetch('market.json?v='+Date.now())]);
     if(fR.ok){var fj=await fR.json();allFunds=fj.funds||[];document.getElementById('rUpdate').textContent='基金: '+fj.updateTime}
     if(mR.ok){var mj=await mR.json();marketData=mj.data||{};updateTicker();updateRight();if(chart)loadChart(curIdx)}
-    renderList();
-    toast('已加载 '+allFunds.length+' 只 QDII 基金');
+    renderList();toast('已加载 '+allFunds.length+' 只 QDII 基金');
   }catch(e){console.error(e);toast('加载失败: '+e.message)}
 }
 
-/* ========== Ticker update ========== */
+/* ========== Ticker ========== */
 function updateTicker(){
   ALL_KEYS.forEach(function(k){
     var d=marketData[k];if(!d)return;
@@ -309,27 +364,20 @@ function updateTicker(){
     if(d.prevClose&&d.price){var pct=(d.price-d.prevClose)/d.prevClose*100;cEl.textContent=fmtPct(pct);cEl.className='chg mono '+(pct>=0?'up':'dn')}
   });
 }
-
 function switchIdx(k){curIdx=k;document.querySelectorAll('.titem').forEach(function(el){el.classList.toggle('on',el.dataset.idx===k)});loadChart(k);updateHeader(k)}
-
 function updateHeader(k){
   var d=marketData[k];
   document.getElementById('mIdxName').textContent=IDX_NAMES[k]||k;
   var tagEl=document.getElementById('mTag');
   var ms=getUSMarketStatus();
-  if(ms.status!=='live'&&ms.status!=='closed'){
-    tagEl.textContent=ms.label;
-    tagEl.className='mtag status-tag '+ms.cls;
-    tagEl.style.display='inline';
-  }else{
-    tagEl.style.display='none';
-  }
+  tagEl.textContent=ms.label;
+  tagEl.className='mtag status-tag '+ms.cls;
+  tagEl.style.display='inline';
   if(d&&d.price!=null){
     document.getElementById('mPrice').textContent=fmtPrice(d.price);
     if(d.prevClose){var pct=(d.price-d.prevClose)/d.prevClose*100;var el=document.getElementById('mChg');el.textContent=fmtPct(pct);el.className='mchg mono '+(pct>=0?'up':'dn')}
   }
 }
-
 function updateRight(){
   var vix=marketData.VIX;
   if(vix&&vix.price!=null){
@@ -358,15 +406,18 @@ function initChart(){
     layout:{background:{type:'solid',color:'rgba(12,20,38,0)'},textColor:'#6b7fa3',fontFamily:'JetBrains Mono,monospace',fontSize:10},
     grid:{vertLines:{color:'rgba(255,255,255,.03)'},horzLines:{color:'rgba(255,255,255,.03)'}},
     crosshair:{mode:0,vertLine:{color:'rgba(91,156,246,.3)',labelBackgroundColor:'#1a2744'},horzLine:{color:'rgba(91,156,246,.3)',labelBackgroundColor:'#1a2744'}},
-    rightPriceScale:{borderColor:'rgba(255,255,255,.08)',scaleMargins:{top:.08,bottom:.08}},
-    timeScale:{borderColor:'rgba(255,255,255,.08)',timeVisible:false},
+    rightPriceScale:{borderColor:'rgba(255,255,255,.08)',scaleMargins:{top:.1,bottom:.1}},
+    timeScale:{borderColor:'rgba(255,255,255,.08)',timeVisible:false,barSpacing:6,minBarSpacing:3},
     handleScroll:true,handleScale:true,
   });
   candleSeries=chart.addCandlestickSeries({
     upColor:'#34d399',downColor:'#f87171',borderUpColor:'#34d399',borderDownColor:'#f87171',
     wickUpColor:'rgba(52,211,153,.5)',wickDownColor:'rgba(248,113,113,.5)',
   });
-  new ResizeObserver(function(){chart.applyOptions({width:box.clientWidth,height:box.clientHeight})}).observe(box);
+  var ro=new ResizeObserver(function(){
+    if(box.clientWidth>0&&box.clientHeight>0){chart.applyOptions({width:box.clientWidth,height:box.clientHeight});chart.timeScale().fitContent()}
+  });
+  ro.observe(box);
 }
 function loadChart(k){
   var d=marketData[k];if(!d||!d.candles||!candleSeries)return;
@@ -383,7 +434,6 @@ function calcFundChg(f){
   if(est&&est.gszzl)return est.gszzl;
   return null;
 }
-
 function renderList(){
   var vis=allFunds.filter(shown);
   var nO=0,nL=0,nC=0;
@@ -392,7 +442,6 @@ function renderList(){
   document.getElementById('rLimited').textContent=nL;
   document.getElementById('rClosed').textContent=nC;
   document.getElementById('rTotal').textContent=vis.length;
-
   var kw=(document.getElementById('searchInput').value||'').trim().toLowerCase();
   var list;
   if(curTab==='fav')list=allFunds.filter(function(f){return favs.indexOf(f.code)>=0});
@@ -400,10 +449,8 @@ function renderList(){
   if(kw)list=list.filter(function(f){return f.code.indexOf(kw)>=0||f.name.toLowerCase().indexOf(kw)>=0});
   var order={open:0,limit:1,closed:2};
   list.sort(function(a,b){return(order[a.status]||2)-(order[b.status]||2)||a.name.localeCompare(b.name,'zh')});
-
   var box=document.getElementById('fundList');
   if(!list.length){box.innerHTML='<div style="padding:40px;text-align:center;color:var(--dim)">暂无匹配基金</div>';return}
-
   var h='';
   list.forEach(function(f){
     var bc=f.status==='open'?'b-o':f.status==='limit'?'b-l':'b-c';
@@ -417,12 +464,10 @@ function renderList(){
     h+='<div class="frow'+sel+'" onclick="selectFund(\''+f.code+'\')">'
       +'<div class="finfo"><div class="fname">'+esc(f.name)+'</div>'
       +'<div class="fmeta"><span style="opacity:.7">'+f.code+'</span><span class="badge '+bc+'">'+esc(statusLabel)+'</span></div></div>'
-      +'<div class="fest"><div class="ev mono">'+evText+'</div><div class="ec mono '+ecCls+'">'+ecText+'</div></div>'
-      +'</div>';
+      +'<div class="fest"><div class="ev mono">'+evText+'</div><div class="ec mono '+ecCls+'">'+ecText+'</div></div></div>';
   });
   box.innerHTML=h;
 }
-
 function selectFund(code){
   selectedFund=code;renderList();
   var f=allFunds.find(function(x){return x.code===code});if(!f)return;
@@ -430,27 +475,24 @@ function selectFund(code){
   document.getElementById('dFund').textContent=f.name;
   document.getElementById('dNav').textContent=f.nav||'--';
   document.getElementById('dEst').textContent=est?est.gsz:'--';
-  var chg=calcFundChg(f);
-  var ecEl=document.getElementById('dEstChg');
+  var chg=calcFundChg(f);var ecEl=document.getElementById('dEstChg');
   ecEl.textContent=chg!=null?fmtPct(chg):'--';
   if(chg!=null)ecEl.className='dv mono '+(parseFloat(chg)>=0?'up':'dn');
   document.getElementById('dLimit').textContent=f.limitAmount||f.statusText||'--';
   document.getElementById('dStatus').textContent=f.status==='open'?'开放申购':f.status==='limit'?'限制大额':'暂停申购';
   document.getElementById('dDate').textContent=f.navDate||'--';
 }
-
 function setTab(t){curTab=t;document.querySelectorAll('.tab').forEach(function(el){el.classList.toggle('on',el.dataset.f===t)});renderList()}
 document.getElementById('searchInput').addEventListener('input',function(){renderList()});
 
-/* ========== Real-time: Push2 (indices + oil) ========== */
+/* ========== Push2 realtime ========== */
 function fetchPush2(){
   var ids=Object.values(PUSH2_MAP).join(',');
   fetch('https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f1,f2,f3,f4,f12,f13,f18&secids='+ids)
     .then(function(r){return r.json()}).then(function(d){
       var items=(d.data||{}).diff||[];
       items.forEach(function(it){
-        var sym=it.f12,mkt=it.f13;
-        var secid=mkt+'.'+sym;
+        var sym=it.f12,mkt=it.f13;var secid=mkt+'.'+sym;
         var key=Object.keys(PUSH2_MAP).find(function(k){return PUSH2_MAP[k]===secid});
         if(!key)return;
         var div=PRICE_DIV[key]||100;
@@ -464,7 +506,6 @@ function fetchPush2(){
         if(prevClose!=null)marketData[key].prevClose=prevClose;
         else if(marketData[key].prevClose==null&&chgPct!=null)marketData[key].prevClose=price/(1+chgPct/100);
         liveData[key]={price:price,chgPct:chgPct,prevClose:marketData[key].prevClose};
-
         var pEl=document.getElementById('t_'+key+'_p'),cEl=document.getElementById('t_'+key+'_c');
         if(pEl)pEl.textContent=fmtPrice(price);
         if(cEl&&chgPct!=null){cEl.textContent=fmtPct(chgPct);cEl.className='chg mono '+(chgPct>=0?'up':'dn')}
@@ -474,7 +515,7 @@ function fetchPush2(){
     }).catch(function(){});
 }
 
-/* ========== Real-time: Fund Estimation JSONP ========== */
+/* ========== Fund estimation JSONP ========== */
 var estQueue=[],estIdx=0;
 function buildEstQueue(){estQueue=allFunds.filter(shown).map(function(f){return f.code});estIdx=0}
 function fetchEstBatch(){
@@ -483,10 +524,7 @@ function fetchEstBatch(){
   if(estIdx>=estQueue.length)estIdx=0;
   batch.forEach(function(code){
     var cb='__gz_'+code;
-    window[cb]=function(d){
-      if(d&&d.fundcode){estData[d.fundcode]=d;renderList();if(selectedFund===d.fundcode)selectFund(d.fundcode)}
-      delete window[cb];
-    };
+    window[cb]=function(d){if(d&&d.fundcode){estData[d.fundcode]=d;renderList();if(selectedFund===d.fundcode)selectFund(d.fundcode)}delete window[cb]};
     var s=document.createElement('script');
     s.src='https://fundgz.1234567.com.cn/js/'+code+'.js?rt='+Date.now()+'&callback='+cb;
     s.onerror=function(){delete window[cb]};
@@ -495,6 +533,62 @@ function fetchEstBatch(){
   });
 }
 window.jsonpgz=function(d){if(d&&d.fundcode){estData[d.fundcode]=d;renderList();if(selectedFund===d.fundcode)selectFund(d.fundcode)}};
+
+/* ========== Email push feature ========== */
+function openEmailModal(){
+  var addr=localStorage.getItem('qdii_email')||'';
+  document.getElementById('emailAddr').value=addr;
+  updateEmailPreview();
+  document.getElementById('emailModal').classList.add('show');
+}
+function closeEmailModal(){document.getElementById('emailModal').classList.remove('show')}
+function saveEmailConfig(){
+  var addr=(document.getElementById('emailAddr').value||'').trim();
+  if(addr&&!addr.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)){toast('邮箱格式不正确');return}
+  localStorage.setItem('qdii_email',addr);
+  closeEmailModal();
+  toast(addr?'邮箱已保存：'+addr:'已清除邮箱设置');
+}
+function buildEmailContent(){
+  var vis=allFunds.filter(shown);
+  var favList=allFunds.filter(function(f){return favs.indexOf(f.code)>=0});
+  var target=favList.length>0?favList:vis;
+  var lines=['📊 QDII 基金额度日报','','日期：'+new Date().toLocaleDateString('zh-CN'),''];
+  var openList=[],limitList=[],closedList=[];
+  target.forEach(function(f){
+    var limitText=f.limitAmount||f.statusText||'--';
+    var line=f.name+' ('+f.code+') — '+limitText;
+    if(f.status==='open')openList.push(line);
+    else if(f.status==='limit')limitList.push(line);
+    else closedList.push(line);
+  });
+  if(openList.length){lines.push('✅ 开放申购（'+openList.length+'只）');openList.forEach(function(l){lines.push('  '+l)});lines.push('')}
+  if(limitList.length){lines.push('⚠️ 限制大额（'+limitList.length+'只）');limitList.forEach(function(l){lines.push('  '+l)});lines.push('')}
+  if(closedList.length){lines.push('🚫 暂停申购（'+closedList.length+'只）');closedList.forEach(function(l){lines.push('  '+l)});lines.push('')}
+  lines.push('─────────────────────');
+  lines.push('📈 汇总：共 '+target.length+' 只基金');
+  lines.push('   可买入：'+openList.length+' 只');
+  lines.push('   限大额：'+limitList.length+' 只');
+  lines.push('   已暂停：'+closedList.length+' 只');
+  if(favList.length>0)lines.push('   （以上为自选基金列表）');
+  lines.push('');
+  ALL_KEYS.forEach(function(k){
+    var d=marketData[k];if(!d||d.price==null)return;
+    var pct=d.prevClose?((d.price-d.prevClose)/d.prevClose*100).toFixed(2):'--';
+    lines.push((IDX_NAMES[k]||k)+'：'+fmtPrice(d.price)+' ('+fmtPct(pct)+')');
+  });
+  lines.push('');lines.push('— QDII 盯盘助手');
+  return lines.join('\n');
+}
+function updateEmailPreview(){document.getElementById('emailPreview').textContent=buildEmailContent()}
+function sendViaMailto(){
+  var addr=(document.getElementById('emailAddr').value||'').trim()||localStorage.getItem('qdii_email')||'';
+  var content=buildEmailContent();
+  var subject='QDII 基金额度日报 — '+new Date().toLocaleDateString('zh-CN');
+  var url='mailto:'+encodeURIComponent(addr)+'?subject='+encodeURIComponent(subject)+'&body='+encodeURIComponent(content);
+  window.open(url);
+}
+document.getElementById('emailModal').addEventListener('click',function(e){if(e.target===this)closeEmailModal()});
 
 /* ========== Init ========== */
 async function init(){
