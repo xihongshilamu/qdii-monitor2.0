@@ -19,7 +19,7 @@
   --radius:14px;--radius-sm:8px;
 }
 html,body{height:100%;overflow:hidden}
-body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);background-attachment:fixed;color:var(--text);font-size:13px;line-height:1.5}
+body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:var(--bg);background-attachment:fixed;color:var(--text);font-size:13px;line-height:1.5;-webkit-overflow-scrolling:touch}
 .up{color:var(--up)}.dn{color:var(--dn)}
 .mono{font-family:'JetBrains Mono',monospace}
 
@@ -128,11 +128,13 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
 
 /* MOBILE */
 @media(max-width:960px){
+  html,body{overflow:auto;overflow-x:hidden}
   .right{display:none}
-  .left{width:100%;min-width:0;max-height:40vh;border-right:none;border-bottom:1px solid var(--border)}
-  .shell{flex-direction:column}
-  .main{flex:1;min-height:0;display:flex;flex-direction:column}
-  .chartbox{flex:1;min-height:180px}
+  .shell{flex-direction:column;height:auto;min-height:calc(100vh - 44px);overflow:visible}
+  .left{width:100%;min-width:0;max-height:none;height:auto;border-right:none;border-bottom:1px solid var(--border)}
+  .flist{max-height:35vh;overflow-y:auto}
+  .main{width:100%;min-height:0}
+  .chartbox{height:240px;min-height:240px;flex:none}
   .detail{flex-wrap:nowrap;overflow-x:auto;gap:0;padding:8px 10px}
   .ditem{min-width:80px;flex:0 0 auto;padding:4px 6px}
   .ditem .dv{font-size:11px}
@@ -145,7 +147,8 @@ body{font-family:'Inter',-apple-system,'PingFang SC','Microsoft YaHei',sans-seri
   .ticker .sym{font-size:9px}
   .ticker .price{font-size:11px}
   .ticker .chg{font-size:9px}
-  .left{max-height:35vh}
+  .flist{max-height:30vh}
+  .chartbox{height:200px;min-height:200px}
   .mhd .mprice{font-size:20px}
   .mhd .midx{font-size:14px}
   .detail .ditem{min-width:70px}
@@ -308,6 +311,10 @@ var PUSH2_MAP={
   SPX:'100.SPX',NDX:'100.NDX',NDX100:'100.NDX100',
   DJI:'100.DJIA',VIX:'100.VIX',OIL:'102.CL00Y'
 };
+var FUTURES_MAP={
+  SPX:'103.ES00Y',NDX100:'103.NQ00Y',DJI:'103.YM00Y'
+};
+var futuresData={};
 var IDX_NAMES={
   SPX:'标普 500',NDX:'纳斯达克综合',NDX100:'纳斯达克 100',
   DJI:'道琼斯工业',VIX:'VIX 恐慌指数',GOLD:'国际黄金',OIL:'WTI 原油'
@@ -375,7 +382,17 @@ function updateHeader(k){
   tagEl.style.display='inline';
   if(d&&d.price!=null){
     document.getElementById('mPrice').textContent=fmtPrice(d.price);
-    if(d.prevClose){var pct=(d.price-d.prevClose)/d.prevClose*100;var el=document.getElementById('mChg');el.textContent=fmtPct(pct);el.className='mchg mono '+(pct>=0?'up':'dn')}
+    var fd=futuresData[k];
+    if(ms.status!=='live'&&fd&&fd.chgPct!=null){
+      var el=document.getElementById('mChg');
+      el.textContent='期货 '+fmtPct(fd.chgPct);
+      el.className='mchg mono '+(fd.chgPct>=0?'up':'dn');
+    }else if(d.prevClose){
+      var pct=(d.price-d.prevClose)/d.prevClose*100;
+      var el=document.getElementById('mChg');
+      el.textContent=fmtPct(pct);
+      el.className='mchg mono '+(pct>=0?'up':'dn');
+    }
   }
 }
 function updateRight(){
@@ -488,11 +505,19 @@ document.getElementById('searchInput').addEventListener('input',function(){rende
 /* ========== Push2 realtime ========== */
 function fetchPush2(){
   var ids=Object.values(PUSH2_MAP).join(',');
-  fetch('https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f1,f2,f3,f4,f12,f13,f18&secids='+ids)
+  var futIds=Object.values(FUTURES_MAP).join(',');
+  var allIds=ids+','+futIds;
+  fetch('https://push2.eastmoney.com/api/qt/ulist.np/get?fields=f1,f2,f3,f4,f12,f13,f18&secids='+allIds)
     .then(function(r){return r.json()}).then(function(d){
       var items=(d.data||{}).diff||[];
       items.forEach(function(it){
         var sym=it.f12,mkt=it.f13;var secid=mkt+'.'+sym;
+        var futKey=Object.keys(FUTURES_MAP).find(function(k){return FUTURES_MAP[k]===secid});
+        if(futKey){
+          var fChgPct=it.f3!=null?it.f3/100:null;
+          futuresData[futKey]={chgPct:fChgPct,raw:it.f2,prevRaw:it.f18};
+          return;
+        }
         var key=Object.keys(PUSH2_MAP).find(function(k){return PUSH2_MAP[k]===secid});
         if(!key)return;
         var div=PRICE_DIV[key]||100;
@@ -511,8 +536,28 @@ function fetchPush2(){
         if(cEl&&chgPct!=null){cEl.textContent=fmtPct(chgPct);cEl.className='chg mono '+(chgPct>=0?'up':'dn')}
         if(prev!=null&&prev!==price&&pEl){pEl.style.color=price>prev?'var(--up)':'var(--dn)';setTimeout(function(){pEl.style.color=''},600)}
       });
+      applyFuturesOverlay();
       updateHeader(curIdx);updateRight();
     }).catch(function(){});
+}
+function applyFuturesOverlay(){
+  var ms=getUSMarketStatus();
+  if(ms.status==='live')return;
+  Object.keys(FUTURES_MAP).forEach(function(key){
+    var fd=futuresData[key];if(!fd||fd.chgPct==null)return;
+    var cEl=document.getElementById('t_'+key+'_c');
+    if(cEl){
+      cEl.textContent=fmtPct(fd.chgPct)+'*';
+      cEl.className='chg mono '+(fd.chgPct>=0?'up':'dn');
+      cEl.title='期货盘前涨跌 (非正式交易时段)';
+    }
+  });
+  if(futuresData.SPX&&futuresData.SPX.chgPct!=null){
+    var cEl=document.getElementById('t_NDX_c');
+    if(cEl&&futuresData.NDX100){
+      /* NDX uses NDX100 futures as proxy */
+    }
+  }
 }
 
 /* ========== Fund estimation JSONP ========== */
