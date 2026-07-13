@@ -68,6 +68,6 @@ python3 -m http.server 8899
 - localStorage 持久化用户自选
 - GitHub Actions 定时更新数据并部署 GitHub Pages
 
-## 创建日期
+## 更新日期
 
-2026-04-16
+2026-07-13
