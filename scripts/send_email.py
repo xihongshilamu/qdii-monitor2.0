@@ -60,6 +60,29 @@ def fmt_pct(price, prev_close):
     return f'{pct:+.2f}%'
 
 
+def limit_text(f: dict) -> str:
+    if f.get('status') == 'open':
+        return '开放申购'
+    details = [d for d in f.get('limitDetails', []) if d.get('amount')]
+    if details:
+        parts = []
+        for d in details:
+            channel = d.get('channel') or ('公告' if d.get('source') == 'announcement' else '天天基金')
+            parts.append(f'{channel}{d["amount"]}')
+        return ' / '.join(parts)
+    amount = f.get('limitAmount')
+    if not amount:
+        return '限额待查' if f.get('status') == 'limit' else f.get('statusText') or '--'
+    source = f.get('limitAmountSource')
+    if source == 'announcement':
+        return f'{amount}（公告）'
+    if source == 'inferred':
+        return f'{amount}（参考）'
+    if source == 'eastmoney':
+        return f'{amount}（页面）'
+    return amount
+
+
 def build_email(funds: list, market: dict, update_time: str) -> tuple[str, str]:
     """Build email subject and HTML body."""
     today = datetime.now(BJ_TZ).strftime('%Y-%m-%d')
@@ -71,7 +94,7 @@ def build_email(funds: list, market: dict, update_time: str) -> tuple[str, str]:
     closed_list = [f for f in vis if f['status'] not in ('open', 'limit')]
 
     def fund_row(f):
-        limit = f.get('limitAmount') or f.get('statusText') or '--'
+        limit = limit_text(f)
         nav = f.get('nav', '--')
         return f'<tr><td>{f["name"]}</td><td style="font-family:monospace">{f["code"]}</td><td>{nav}</td><td><b>{limit}</b></td></tr>'
 

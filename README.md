@@ -14,20 +14,18 @@
 
 ## 使用方式
 
-### 方式一：本地打开
-
-直接双击 `index.html` 用浏览器打开即可。
-
-### 方式二：HTTP 服务
+### 本地 HTTP 服务
 
 ```bash
-cd projects/qdii-monitor
-python -m http.server 8899
+cd /Users/wangjinlan/Downloads/qdii-monitor-main
+python3 -m http.server 8899
 ```
 
 然后访问 http://localhost:8899
 
-### 方式三：部署到 Gitee / GitHub Pages
+> 不建议直接双击 `index.html` 打开。现代浏览器会限制 `file://` 页面读取同目录下的 `data.json` 和 `market.json`，导致基金列表无法加载。
+
+### 部署到 Gitee / GitHub Pages
 
 1. 创建一个新的 Git 仓库
 2. 将 `index.html` 推送到仓库
