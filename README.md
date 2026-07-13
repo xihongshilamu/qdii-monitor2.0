@@ -28,7 +28,7 @@
 ### 本地 HTTP 服务
 
 ```bash
-cd /Users/wangjinlan/Downloads/qdii-monitor-main
+cd qdii-monitor2.0
 python3 -m http.server 8899
 ```
 
